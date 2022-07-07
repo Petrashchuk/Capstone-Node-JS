@@ -12,8 +12,10 @@ class UserController extends Controller {
 
     insert = async (req, res, next) => {
         try {
-            const {lastID} = await this.facade.insert(req.body);
-            res.status(statusCode.CREATED).json(await this.facade.getById(lastID))
+            if (req.body.username) {
+                const {lastID} = await this.facade.insert(req.body);
+                res.status(statusCode.CREATED).json(await this.facade.getById(lastID))
+            } else next({statusCode: statusCode.BAD_REQUEST, message: 'please type username'})
         } catch (e) {
             next({statusCode: statusCode.INTERNAL_SERVER_ERROR, message: e.message})
         }

@@ -10,7 +10,7 @@
 <body>
 <div class="container">
     <h1>Exercise tracker</h1>
-    <form action="/api/users" method="post">
+    <form id="create-user-form" action="/api/users" method="post">
         <h3>Create a New User</h3>
         <p><code>POST /api/users</code></p>
         <input id="uname" type="text" name="username" placeholder="username"/>
@@ -52,20 +52,31 @@
 
     const exerciseForm = document.getElementById("exercise-form");
     const logsUserForm = document.getElementById("logs-user-form");
+    const createUserForm = document.getElementById('create-user-form');
+    createUserForm.addEventListener("submit", e => {
+        e.preventDefault();
+        const userName = document.getElementById('uname').value;
 
-    logsUserForm.addEventListener("submit", () => {
+        if (userName) {
+            createUserForm.body = {username: userName};
+            createUserForm.submit();
+        } else alert("please type username")
+    })
+
+    logsUserForm.addEventListener("submit", e => {
+        e.preventDefault();
         const userId = document.getElementById("userId").value;
-        if(userId){
+        if (userId) {
             const params = document.getElementById("params").value;
             let url = `/api/users/${userId}/logs`;
             if (params) url += `?${params}`;
             logsUserForm.action = url;
             logsUserForm.submit();
-        }
-        else alert("please type userId")
+        } else alert("please type userId")
     });
 
-    exerciseForm.addEventListener("submit", () => {
+    exerciseForm.addEventListener("submit", e => {
+        e.preventDefault();
         const userId = document.getElementById("uid").value;
         exerciseForm.action = `/api/users/${userId}/exercises`;
 
