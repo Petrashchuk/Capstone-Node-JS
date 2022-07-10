@@ -27,11 +27,16 @@ class UserFacade extends Facade {
                 `)
     }
 
-    getAllExercises = (userId, from, to, limit) => {
-        if (!(limit || to || from)) return this.db.all(`SELECT * FROM Exercises WHERE userId = ${userId}`)
-        return this.db.all(`SELECT * FROM Exercises
+    getAllExercises = (userId, from = '1970-01-01', to = new Date().toISOString().slice(0, 10), limit) => {
+
+        if (limit) return this.db.all(`SELECT * FROM Exercises
                     WHERE userId = ${userId} AND date(date) BETWEEN '${from}' AND '${to}' LIMIT ${limit}
                     `)
+
+        else return this.db.all(`SELECT * FROM Exercises
+                    WHERE userId = ${userId} AND date(date) BETWEEN '${from}' AND '${to}'
+                    `)
+
     }
 }
 

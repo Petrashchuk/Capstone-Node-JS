@@ -1,5 +1,4 @@
 const statusCode = require('http-status-codes');
-const queryString = require('query-string');
 
 const Controller = require('../../utils/controller');
 const UserFacade = require('./facade');
@@ -34,15 +33,19 @@ class UserController extends Controller {
 
     insertExercise = async (req, res, next) => {
         try {
-            const data = {...req.body}
-            if (!data.date) data.date = new Date().toISOString().slice(0, 10);
-            const {lastID} = await this.facade.insertExercise(data);
+            const {id} = req.params;
 
+            if(!await this.facade.getById(id)){
+                return next({statusCode: statusCode.NOT_FOUND, message: "User doesn't exist"})
+            }
+            const data = {...req.body,id};
+            if (!data.date) data.date = new Date().toISOString().slice(0, 10);
             if (!data.description || !parseFloat(data.duration)) {
                 return res.status(statusCode.BAD_REQUEST).json({message: 'fields description and duration are required '})
             }
+            const {lastID} = await this.facade.insertExercise(data);
 
-            const {userId, duration, description, date} = await this.facade.getUserByIdExercise(data.id, lastID);
+            const {userId, duration, description, date}  = await this.facade.getUserByIdExercise(id, lastID);
             res.status(statusCode.CREATED).json({
                 userId,
                 exerciseId: lastID,
@@ -59,9 +62,9 @@ class UserController extends Controller {
     getLogs = async (req, res, next) => {
         try {
             const {id} = req.params
-            const {params} = req.query
-            const {from, to, limit} = queryString.parse(params);
+            const {from, to, limit} = req.query
             const result = await this.facade.getAllExercises(id, from, to, limit);
+
             res.status(statusCode.OK).json({
                 count: result.length,
                 logs: result
