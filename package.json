@@ -12,6 +12,7 @@
 		"dotenv": "^8.2.0",
 		"express": "^4.16.4",
 		"http-status-codes": "^2.2.0",
+		"moment": "^2.29.4",
 		"nodemon": "^2.0.16",
 		"query-string": "^7.1.1",
 		"sqlite-async": "^1.1.3"
