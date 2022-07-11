@@ -12,8 +12,12 @@ class UserController extends Controller {
 
     insert = async (req, res, next) => {
         try {
-            if (req.body.username) {
-                const {lastID} = await this.facade.insert(req.body);
+            const {username} = req.body;
+            if (username) {
+                if (await this.facade.findUserByName(username)) {
+                    return next({statusCode: statusCode.CONFLICT, message: "User with this name already exists"})
+                }
+                const {lastID} = await this.facade.insertName(username);
                 res.status(statusCode.CREATED).json(await this.facade.getById(lastID))
             } else next({statusCode: statusCode.BAD_REQUEST, message: 'please type username'})
         } catch (e) {
@@ -72,12 +76,16 @@ class UserController extends Controller {
     getLogs = async (req, res, next) => {
         try {
             const {id} = req.params
-            const {from, to, limit} = req.query
-            const result = await this.facade.getAllExercises(id, from, to, limit);
 
+            if (!await this.facade.getById(id)) {
+                return next({statusCode: statusCode.NOT_FOUND, message: "User doesn't exist"})
+            }
+
+            const {from, to, limit} = req.query
+            const { count, logs } = await this.facade.getAllExercises(id, from, to, limit);
             res.status(statusCode.OK).json({
-                count: result.length,
-                logs: result
+                logs,
+                count
             })
         } catch (e) {
             next({statusCode: statusCode.INTERNAL_SERVER_ERROR, message: e.message})

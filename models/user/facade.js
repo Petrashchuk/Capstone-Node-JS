@@ -5,10 +5,12 @@ class UserFacade extends Facade {
         super();
     }
 
-    insert = data => {
+    insertName = username => {
         const sql = `INSERT INTO Users(username) VALUES(?)`
-        return this.db.run(sql, [data.username])
+        return this.db.run(sql, [username])
     }
+
+    findUserByName = userName => this.db.get(`SELECT * FROM Users WHERE username = '${userName}'`)
 
     getById = id => this.db.get(`SELECT * FROM Users WHERE id = ${id}`)
 
@@ -27,15 +29,18 @@ class UserFacade extends Facade {
                 `)
     }
 
-    getAllExercises = (userId, from = '1970-01-01', to = new Date().toISOString().slice(0, 10), limit) => {
+    getAllExercises = async (userId, from = '1970-01-01', to = new Date().toISOString().slice(0, 10), limit) => {
 
-        if (limit) return this.db.all(`SELECT * FROM Exercises
+        const request = limit ? this.db.all(`SELECT * FROM Exercises
                     WHERE userId = ${userId} AND date(date) BETWEEN '${from}' AND '${to}' LIMIT ${limit}
-                    `)
-
-        else return this.db.all(`SELECT * FROM Exercises
+                    `) : this.db.all(`SELECT * FROM Exercises
                     WHERE userId = ${userId} AND date(date) BETWEEN '${from}' AND '${to}'
-                    `)
+                    `);
+
+        return {
+            logs: await request,
+            ...(await this.db.all(`SELECT COUNT(*) AS count FROM Exercises WHERE userId = ${userId} AND date(date) BETWEEN '${from}' AND '${to}' `))[0]
+        }
 
     }
 }
