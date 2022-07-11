@@ -31,15 +31,18 @@ class UserFacade extends Facade {
 
     getAllExercises = async (userId, from = '1970-01-01', to = new Date().toISOString().slice(0, 10), limit) => {
 
-        const request = limit ? this.db.all(`SELECT * FROM Exercises
+        const resultsReq = limit ? this.db.all(`SELECT * FROM Exercises
                     WHERE userId = ${userId} AND date(date) BETWEEN '${from}' AND '${to}' LIMIT ${limit}
                     `) : this.db.all(`SELECT * FROM Exercises
                     WHERE userId = ${userId} AND date(date) BETWEEN '${from}' AND '${to}'
                     `);
 
+        const countReq = this.db.all(`SELECT COUNT(*) AS count FROM Exercises WHERE userId = ${userId} AND date(date) BETWEEN '${from}' AND '${to}'`);
+        const [logs, count] = await Promise.all([resultsReq, countReq])
+
         return {
-            logs: await request,
-            ...(await this.db.all(`SELECT COUNT(*) AS count FROM Exercises WHERE userId = ${userId} AND date(date) BETWEEN '${from}' AND '${to}' `))[0]
+            logs,
+            ...count[0]
         }
 
     }
